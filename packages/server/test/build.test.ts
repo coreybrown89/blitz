@@ -13,14 +13,14 @@ jest.doMock('../src/next-utils', () => nextUtilsMock)
 
 // Import with mocks applied
 import {build} from '../src/build'
-import {resolve} from 'path'
+import path from 'path'
 import {remove, pathExists} from 'fs-extra'
 import directoryTree from 'directory-tree'
 
 describe('Build command', () => {
-  const rootFolder = resolve(__dirname, './fixtures/build')
-  const buildFolder = resolve(rootFolder, '.blitz-build')
-  const devFolder = resolve(rootFolder, '.blitz')
+  const rootFolder = path.resolve(__dirname, './fixtures/build')
+  const buildFolder = path.resolve(rootFolder, '.blitz-build')
+  const devFolder = path.resolve(rootFolder, '.blitz')
 
   beforeEach(async () => {
     jest.clearAllMocks()
@@ -28,7 +28,7 @@ describe('Build command', () => {
   })
 
   afterEach(async () => {
-    const nextFolder = resolve(rootFolder, '.next')
+    const nextFolder = path.resolve(rootFolder, '.next')
 
     if (await pathExists(nextFolder)) {
       await remove(nextFolder)
@@ -48,55 +48,55 @@ describe('Build command', () => {
             {
               extension: '.js',
               name: 'blitz.config.js',
-              path: `${buildFolder}/blitz.config.js`,
+              path: path.join(buildFolder, 'blitz.config.js'),
               size: 20,
               type: 'file',
             },
             {
               extension: '.js',
               name: 'next.config.js',
-              path: `${buildFolder}/next.config.js`,
+              path: path.join(buildFolder, 'next.config.js'),
               size: 130,
               type: 'file',
             },
             {
               extension: '',
               name: 'one',
-              path: `${buildFolder}/one`,
+              path: path.join(buildFolder, 'one'),
               size: 0,
               type: 'file',
             },
             {
               extension: '',
               name: 'two',
-              path: `${buildFolder}/two`,
+              path: path.join(buildFolder, 'two'),
               size: 0,
               type: 'file',
             },
           ],
           name: '.blitz-build',
-          path: `${buildFolder}`,
+          path: buildFolder,
           size: 150,
           type: 'directory',
         },
         {
           extension: '',
           name: '.now',
-          path: `${rootFolder}/.now`,
+          path: path.join(rootFolder, '.now'),
           size: 18,
           type: 'file',
         },
         {
           extension: '',
           name: 'one',
-          path: `${rootFolder}/one`,
+          path: path.join(rootFolder, 'one'),
           size: 0,
           type: 'file',
         },
         {
           extension: '',
           name: 'two',
-          path: `${rootFolder}/two`,
+          path: path.join(rootFolder, 'two'),
           size: 0,
           type: 'file',
         },
