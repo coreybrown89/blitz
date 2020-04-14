@@ -13,7 +13,7 @@ jest.doMock('../src/next-utils', () => nextUtilsMock)
 
 // Import with mocks applied
 import {dev} from '../src/dev'
-import {resolve} from 'path'
+import path from 'path'
 import {FSWatcher} from 'chokidar'
 import {remove, pathExists} from 'fs-extra'
 import directoryTree from 'directory-tree'
@@ -29,17 +29,17 @@ describe('Dev command', () => {
   })
 
   afterEach(async () => {
+    await watcher?.close()
     if (await pathExists(devFolder)) {
       await remove(devFolder)
     }
-    watcher?.close()
   })
 
   describe('when with next.config', () => {
     beforeEach(async () => {
-      rootFolder = resolve(__dirname, './fixtures/bad-config')
-      buildFolder = resolve(rootFolder, '.blitz')
-      devFolder = resolve(rootFolder, '.blitz')
+      rootFolder = path.resolve(__dirname, './fixtures/bad-config')
+      buildFolder = path.resolve(rootFolder, '.blitz')
+      devFolder = path.resolve(rootFolder, '.blitz')
     })
 
     it('should fail when passed a next.config.js', (done) => {
@@ -56,9 +56,9 @@ describe('Dev command', () => {
 
   describe('when run normally', () => {
     beforeEach(async () => {
-      rootFolder = resolve(__dirname, './fixtures/dev')
-      buildFolder = resolve(rootFolder, '.blitz')
-      devFolder = resolve(rootFolder, '.blitz-dev')
+      rootFolder = path.resolve(__dirname, './fixtures/dev')
+      buildFolder = path.resolve(rootFolder, '.blitz')
+      devFolder = path.resolve(rootFolder, '.blitz-dev')
       watcher = await dev({rootFolder, buildFolder, devFolder, writeManifestFile: false})
     })
 
@@ -71,28 +71,28 @@ describe('Dev command', () => {
               {
                 extension: '.js',
                 name: 'blitz.config.js',
-                path: `${devFolder}/blitz.config.js`,
+                path: path.join(devFolder, 'blitz.config.js'),
                 size: 20,
                 type: 'file',
               },
               {
                 extension: '.js',
                 name: 'next.config.js',
-                path: `${devFolder}/next.config.js`,
+                path: path.join(devFolder, 'next.config.js'),
                 size: 130,
                 type: 'file',
               },
               {
                 extension: '',
                 name: 'one',
-                path: `${devFolder}/one`,
+                path: path.join(devFolder, 'one'),
                 size: 0,
                 type: 'file',
               },
               {
                 extension: '',
                 name: 'two',
-                path: `${devFolder}/two`,
+                path: path.join(devFolder, 'two'),
                 size: 0,
                 type: 'file',
               },
@@ -105,21 +105,21 @@ describe('Dev command', () => {
           {
             extension: '',
             name: '.now',
-            path: `${rootFolder}/.now`,
+            path: path.join(rootFolder, '.now'),
             size: 18,
             type: 'file',
           },
           {
             extension: '',
             name: 'one',
-            path: `${rootFolder}/one`,
+            path: path.join(rootFolder, 'one'),
             size: 0,
             type: 'file',
           },
           {
             extension: '',
             name: 'two',
-            path: `${rootFolder}/two`,
+            path: path.join(rootFolder, 'two'),
             size: 0,
             type: 'file',
           },
@@ -132,8 +132,10 @@ describe('Dev command', () => {
     })
 
     it('calls spawn with the patched next cli bin', () => {
-      expect(nextUtilsMock.nextStartDev.mock.calls[0][0]).toBe(`${rootFolder}/node_modules/.bin/next-patched`)
-      expect(nextUtilsMock.nextStartDev.mock.calls[0][1]).toBe(`${rootFolder}/.blitz-dev`)
+      const nextPatched = path.join(rootFolder, 'node_modules', '.bin', 'next-patched')
+      const blitzDev = path.join(rootFolder, '.blitz-dev')
+      expect(nextUtilsMock.nextStartDev.mock.calls[0][0]).toBe(nextPatched)
+      expect(nextUtilsMock.nextStartDev.mock.calls[0][1]).toBe(blitzDev)
     })
   })
 })
