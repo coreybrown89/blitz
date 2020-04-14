@@ -1,4 +1,5 @@
 import File from 'vinyl'
+import path from 'path'
 import {Readable, Writable} from 'readable-stream'
 import {runRule} from './rules-runner'
 
@@ -66,27 +67,27 @@ it('transforms the file', (done) => {
       })),
     ).toMatchObject([
       {
-        path: '/folder/file1',
+        path: path.join('/', 'folder', 'file1'),
         contents: 'File 1',
       },
       {
-        path: '/folder/file1_rpc',
+        path: path.join('/', 'folder', 'file1_rpc'),
         contents: 'File 1',
       },
       {
-        path: '/folder/file2',
+        path: path.join('/', 'folder', 'file2'),
         contents: 'File 2',
       },
       {
-        path: '/folder/file2_rpc',
+        path: path.join('/', 'folder', 'file2_rpc'),
         contents: 'File 2',
       },
       {
-        path: '/folder/file3',
+        path: path.join('/', 'folder', 'file3'),
         contents: 'File 3',
       },
       {
-        path: '/folder/file3_rpc',
+        path: path.join('/', 'folder', 'file3_rpc'),
         contents: 'File 3',
       },
     ])
