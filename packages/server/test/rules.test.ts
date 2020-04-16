@@ -13,7 +13,7 @@ jest.doMock('../src/next-utils', () => nextUtilsMock)
 
 // Import with mocks applied
 import {dev} from '../src/dev'
-import {resolve} from 'path'
+import path from 'path'
 import {FSWatcher} from 'chokidar'
 import {remove, pathExists} from 'fs-extra'
 import directoryTree from 'directory-tree'
@@ -21,9 +21,9 @@ import directoryTree from 'directory-tree'
 describe('Dev command', () => {
   let watcher: FSWatcher
 
-  const rootFolder = resolve(__dirname, './fixtures/rules')
-  const buildFolder = resolve(rootFolder, '.blitz')
-  const devFolder = resolve(rootFolder, '.blitz-rules')
+  const rootFolder = path.resolve(__dirname, './fixtures/rules')
+  const buildFolder = path.resolve(rootFolder, '.blitz')
+  const devFolder = path.resolve(rootFolder, '.blitz-rules')
 
   beforeEach(async () => {
     jest.clearAllMocks()
@@ -31,14 +31,15 @@ describe('Dev command', () => {
   })
 
   afterEach(async () => {
+    await watcher.close()
     if (await pathExists(devFolder)) {
       await remove(devFolder)
     }
-    watcher.close()
   })
 
   it('should copy the correct files to the dev folder', async () => {
     const tree = directoryTree(devFolder)
+    console.log('tree', tree)
     expect(tree).toEqual({
       path: `${devFolder}`,
       name: '.blitz-rules',
@@ -46,30 +47,30 @@ describe('Dev command', () => {
         {
           extension: '.js',
           name: 'blitz.config.js',
-          path: `${devFolder}/blitz.config.js`,
+          path: path.join(devFolder, 'blitz.config.js'),
           size: 20,
           type: 'file',
         },
         {
           extension: '.js',
           name: 'next.config.js',
-          path: `${devFolder}/next.config.js`,
+          path: path.join(devFolder, 'next.config.js'),
           size: 130,
           type: 'file',
         },
         {
-          path: `${devFolder}/pages`,
+          path: path.join(devFolder, 'pages'),
           name: 'pages',
           children: [
             {
-              path: `${devFolder}/pages/bar.tsx`,
+              path: path.join(devFolder, 'pages', 'bar.tsx'),
               name: 'bar.tsx',
               size: 60,
               extension: '.tsx',
               type: 'file',
             },
             {
-              path: `${devFolder}/pages/foo.tsx`,
+              path: path.join(devFolder, 'pages', 'foo.tsx'),
               name: 'foo.tsx',
               size: 60,
               extension: '.tsx',
