@@ -1,6 +1,6 @@
 import {spawn} from 'child_process'
 import * as pty from 'node-pty'
-import {Manifest} from 'synchronizer/manifest'
+import {Manifest} from 'synchronizer/pipeline/rules/manifest'
 // import chalk from 'chalk'
 
 function transformOutput(_manifest: Manifest, _devFolder: string) {
@@ -52,7 +52,7 @@ export async function nextStart(nextBin: string, cwd: string) {
     spawn(nextBin, ['start'], {
       cwd,
       stdio: 'inherit',
-    }).on('error', (err) => {
+    }).on('error', err => {
       console.error(err)
     }),
   )

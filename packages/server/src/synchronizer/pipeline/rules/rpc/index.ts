@@ -1,52 +1,60 @@
 import File from 'vinyl'
-import {absolutePathTransform} from './path-utils'
+import {absolutePathTransform} from '../utils'
+import {RuleConfig} from '../../../types'
 import {relative} from 'path'
-import {Rule} from '../types'
+import {through} from '../../../streams'
 
-type Args = {srcPath: string}
+export default function configure({src}: RuleConfig) {
+  const fileTransformer = absolutePathTransform(src)
 
-export default function rpc({srcPath}: Args): Rule {
-  const fileTransformer = absolutePathTransform(srcPath)
   const getRpcPath = fileTransformer(rpcPath)
   const getRpcHandlerPath = fileTransformer(handlerPath)
 
-  return (file: File) => {
-    if (!isRpcPath(file.path)) return [file]
+  const stream = through({objectMode: true}, function (file, _, next) {
+    if (!isRpcPath(file.path)) {
+      next(null, file)
+      return
+    }
 
-    const importPath = rpcPath(resolutionPath(srcPath, file.path))
+    const importPath = rpcPath(resolutionPath(src, file.path))
     const {resolverType, resolverName} = extractTemplateVars(importPath)
 
-    return [
-      // Original function -> _rpc path
+    // Original function -> _rpc path
+    this.push(
       new File({
         path: getRpcPath(file.path),
         contents: file.contents,
+        hash: file.hash + ':1',
       }),
+    )
 
-      // Replace function with Rpc Client
-      new File({
-        path: file.path,
-        contents: Buffer.from(isomorphicRpcTemplate(importPath)),
-      }),
-
-      // Create Rpc Route Handler
+    // File API route handler
+    this.push(
       new File({
         path: getRpcHandlerPath(file.path),
         contents: Buffer.from(rpcHandlerTemplate(importPath, resolverType, resolverName)),
+        hash: file.hash + ':2',
       }),
-    ]
-  }
+    )
+
+    // Isomorphic RPC client
+    const rpcFile = file.clone()
+    rpcFile.contents = Buffer.from(isomorphicRpcTemplate(importPath))
+    this.push(rpcFile)
+
+    next()
+  })
+
+  return {stream}
 }
 
 export function isRpcPath(filePath: string) {
-  return new RegExp('(?:app\\/).*(?:queries|mutations)\\/.+').exec(filePath)
+  return new RegExp('(?:app\\/)(?!_rpc).*(?:queries|mutations)\\/.+').exec(filePath)
 }
 
 const isomorphicRpcTemplate = (resolverPath: string) => `
 import {isomorphicRpc} from '@blitzjs/core'
-
 import resolver from '${resolverPath}'
-
 export default isomorphicRpc(resolver, '${resolverPath}') as typeof resolver
 `
 
@@ -54,7 +62,6 @@ const rpcHandlerTemplate = (resolverPath: string, resolverType: string, resolver
 import {rpcHandler} from '@blitzjs/core'
 import resolver from '${resolverPath}'
 import db from 'db'
-
 export default rpcHandler('${resolverType}', '${resolverName}', resolver, () => db.connect())
 `
 
