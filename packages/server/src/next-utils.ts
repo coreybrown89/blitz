@@ -1,7 +1,6 @@
 import {spawn} from 'cross-spawn'
 import * as pty from 'node-pty'
-import {Manifest} from 'synchronizer/pipeline/rules/manifest'
-// import chalk from 'chalk'
+import {Manifest} from './synchronizer/pipeline/rules/manifest'
 
 function transformOutput(_manifest: Manifest, _devFolder: string) {
   return (data: any) => {
@@ -54,7 +53,7 @@ export async function nextStart(nextBin: string, cwd: string) {
     spawn(nextBin, ['start'], {
       cwd,
       stdio: 'inherit',
-    }).on('error', err => {
+    }).on('error', (err) => {
       console.error(err)
     }),
   )

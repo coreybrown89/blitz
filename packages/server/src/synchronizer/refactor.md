@@ -1,4 +1,4 @@
-# Plugin interface
+# Synchronizer Refactor
 
 Design goals
 
@@ -7,6 +7,8 @@ Design goals
 - Efficiency
 - Paralell processing
 - Cleaner Architecture for Dirty restart functionality
+- Agnostic input file watcher / glob
+- Simplify tests (Later PR)
 
 # Node stream based
 

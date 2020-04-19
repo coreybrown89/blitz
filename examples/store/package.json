@@ -12,7 +12,6 @@
     "@prisma/cli": "2.0.0-beta.2",
     "@prisma/client": "2.0.0-beta.2",
     "final-form": "4.19.1",
-    "flush-write-stream": "^2.0.0",
     "react": "0.0.0-experimental-e5d06e34b",
     "react-dom": "0.0.0-experimental-e5d06e34b",
     "react-final-form": "6.4.0",
@@ -20,7 +19,6 @@
   },
   "NOTE": "Next.js dependency is only required for deploying to zeit, for now",
   "devDependencies": {
-    "@types/flush-write-stream": "^1.0.0",
     "next": "9.3.4"
   }
 }
