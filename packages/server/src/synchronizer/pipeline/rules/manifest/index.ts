@@ -3,7 +3,7 @@ import {through, pipeline} from '../../../streams'
 import {dest} from 'vinyl-fs'
 import gulpIf from 'gulp-if'
 import {resolve} from 'path'
-import {RuleArgs} from 'synchronizer/pipeline'
+import {Rule} from '../../../types'
 
 type ManifestVO = {
   keys: {[k: string]: string}
@@ -97,7 +97,7 @@ const createManifestFile = (manifest: Manifest, fileName: string, compact: boole
 }
 
 // TODO: Offload the file writing to later and write with all the other file writing
-export default ({config}: RuleArgs) => {
+const create: Rule = ({config}) => {
   const manifest = Manifest.create()
   const stream = pipeline(
     setManifestEntry(manifest).stream,
@@ -107,3 +107,5 @@ export default ({config}: RuleArgs) => {
 
   return {stream, manifest}
 }
+
+export default create

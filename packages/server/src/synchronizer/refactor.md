@@ -6,8 +6,7 @@ Design goals
 - Everything is a rule
 - Efficiency
 - Paralell processing
-- Dirty restart
-- Functional style
+- Cleaner Architecture for Dirty restart functionality
 
 # Node stream based
 
@@ -36,33 +35,37 @@ type Reductions = {
 }
 ```
 
-All phases can be run internally in paralell.
-
-| Phase    | Data type                                                     | Process Description                                                                     |
-| -------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| _Input_  | `RawFile -> File` setInputted()                               | (Internal) Hash files. Guard against double processing. Single Stream leads to Analysis |
-| Process  | `{ File, getInputtedList, getProcessedList, getWrittenList }` | Alter files and file paths and add new related files back to Input                      |
-| Write    | `{ File, getInputtedList, getProcessedList, getWrittenList }` | Write files to disk.                                                                    |
-| Complete | `{File, InputList, CompletionList}` setCompleted()            | Process output. Report on 'ready'                                                       |
+                                            |
 
 Rules will be of the format:
 
 ```ts
-type Rule = (a: {
-  config: Config
-  addFile: (file: File) => void
-  ready: ReadyObj | (obj: ReadyObj) => void
-  taps: () => {
-    analyze: Transform
-    process: Transform
-    write: Transform
-    complete: Transform
+type RuleArgs = {
+  // Config object passed in to pipeline
+  config: {
+    src: string
+    dest: string
+    cwd: string
+    manifest: {
+      path: string
+      write: boolean
+    }
   }
-}) => {
-  analyze?: Transform
-  process?: Transform
-  write?: Transform
-  complete?: Transform
+
+  // Errors stream to push errors to so they are displayed nicely
+  errors: Transform
+
+  // Pipeline input stream to push new files to
+  input: Transform
+
+  // Returns the input cache for analytical in stream processes
+  getInputCache(): FileCache
+}
+
+type Rule = (
+  a: RuleArgs,
+) => {
+  stream: Transform
 }
 ```
 
@@ -71,7 +74,7 @@ type Rule = (a: {
 Evented Vinyl Files are vinyl files with events attached to them
 
 ```ts
-const isDelete = file => file.isNull() && file.event === 'unlink'
+const isDelete = (file) => file.isNull() && file.event === 'unlink'
 
 // The input file at '/path/to/foo' was deleted
 // This can be transformed during the process phase
@@ -147,7 +150,7 @@ const initialize = composeRules(blitzConfig, rpc, pages, manifest, fileWriting)
 const source = gatherInput(config)
 
 return new Promise((resolve, reject) => {
-  const readyHandler = resolveData => resolve(resolveData)
+  const readyHandler = (resolveData) => resolve(resolveData)
 
   // Run initialization code for all streams
   const rules = await initialize(config, readyHandler)
@@ -268,7 +271,7 @@ const hash => !output[hash];
 Which files do I still need to delete?
 
 ```ts
-const deleteHashes = Object.keys(output).filter(hash => input[hash])
+const deleteHashes = Object.keys(output).filter((hash) => input[hash])
 ```
 
 - Output can also be indexed by filetype to keep going with our hacky error mapping (eventually this should probably be a sourcemap)

@@ -1,6 +1,7 @@
-import File from 'vinyl'
 import {Manifest} from './pipeline/rules/manifest'
 import {through} from './streams'
+import {Readable, Writable} from 'stream'
+import {FileCache} from './pipeline/helpers/file-cache'
 
 // Rule functions transform the file stream
 // If the function returns an array of files add those files to the stream
@@ -25,14 +26,21 @@ export type ReadyObj = {
   manifest: Manifest
 }
 
+export type RuleArgs = {
+  config: RuleConfig
+  errors: Writable
+  input: Writable
+  getInputCache: () => FileCache
+}
+
 export type ReadyFn = (obj: ReadyObj) => void
 export type ReadyArg = ReadyObj | ReadyFn
-export type Rule = (a: {
-  config: RuleConfig
-  addFile: (file: File) => void
-  ready: ReadyArg
-  taps: () => RuleTransformObject
-}) => Partial<RuleTransformObject>
+
+export type Rule = (
+  a: RuleArgs,
+) => {
+  stream: Readable
+} & Record<any, any>
 
 export type RuleInitializer = any
 

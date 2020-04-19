@@ -2,9 +2,9 @@ import File from 'vinyl'
 import {absolutePathTransform} from '../utils'
 import {relative} from 'path'
 import {through} from '../../../streams'
-import {RuleArgs} from '../../index'
+import {Rule} from '../../../types'
 
-export default function configure({config: {src}}: RuleArgs) {
+const create: Rule = function configure({config: {src}}) {
   const fileTransformer = absolutePathTransform(src)
 
   const getRpcPath = fileTransformer(rpcPath)
@@ -47,6 +47,8 @@ export default function configure({config: {src}}: RuleArgs) {
 
   return {stream}
 }
+
+export default create
 
 export function isRpcPath(filePath: string) {
   return new RegExp('(?:app\\/)(?!_rpc).*(?:queries|mutations)\\/.+').exec(filePath)

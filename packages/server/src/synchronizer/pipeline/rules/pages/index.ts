@@ -1,9 +1,9 @@
 import {through} from '../../../streams'
 import File from 'vinyl'
 import {absolutePathTransform} from '../utils'
-import {RuleArgs} from '../../index'
+import {Rule} from '../../../types'
 
-export default ({config}: RuleArgs) => {
+const create: Rule = ({config}) => {
   const {src} = config
   const transformer = absolutePathTransform(src)(pathTransformer)
   const stream = through.obj((file: File, _, next) => {
@@ -13,6 +13,8 @@ export default ({config}: RuleArgs) => {
 
   return {stream}
 }
+
+export default create
 
 export function pathTransformer(path: string) {
   const regex = new RegExp(`(?:\\/?app\\/.*?\\/?)(pages\\/.+)$`)

@@ -1,12 +1,12 @@
 import {through, pipeline} from '../../../streams'
 import gulpIf from 'gulp-if'
-import {unlink} from '../../../unlink'
+import {unlink} from '../../helpers/unlink'
 import {dest} from 'vinyl-fs'
 import File from 'vinyl'
-import {RuleArgs} from 'synchronizer/pipeline'
+import {Rule} from '../../../types'
 
 // import chalk from 'chalk'
-export default ({config}: RuleArgs) => {
+const create: Rule = ({config}) => {
   let count = 0
   const reporter = through((data, _, next) => {
     next(null, `writing[${count++}]: ${data.toString().replace(config.cwd, '')}\n`)
@@ -27,5 +27,7 @@ export default ({config}: RuleArgs) => {
 
   return {stream, reporter}
 }
+
+export default create
 
 const isUnlinkFile = (file: File) => file.event === 'unlink' || file.event === 'unlinkDir'
