@@ -22,20 +22,7 @@ Helper Libs
 - Parallel - [parallel-transform](https://npmjs.com/package/parallel-transform)
 - Node Compat - [readable-stream](https://npmjs.com/package/readable-stream)
 
-# Phases
-
-Each phase has access to various list reductions
-
-```ts
-type Reductions = {
-  inputted: () => Inputted
-  processed: () => Processed
-  written: () => Written
-  completed: () => Completed
-}
-```
-
-                                            |
+# Rules |
 
 Rules will be of the format:
 
@@ -109,23 +96,18 @@ Some types of analysis needs a list of all the files other types do not
 
 Analysis needs to be done in stream as new information comes in. Eg. when someone renames a file that file goes to the analysis engine which works out invariants as they occur without requiring a sweep of the entire file system.
 
-To do this it should work in stream and have access to a list of the ingress and complete items
+# Rules
 
-# Process
-
-Process should take a file and process it
+Rule streams should take a file and process it
 
 Possible things it can do:
 
 - Change its path or contents
 - Drop the file from further processing. Don't copy it.
 - Add new files to the input stream - Associating the new files with the original
-
-# Rules
+- Write an error to the error stream
 
 Rules can create a new file to add to the head of the queue
-
-They can fork a stream eg. to run a paralell process such as analysis or write a manifest file
 
 They can hold state in a closure.
 
@@ -134,99 +116,70 @@ They should be managed in a list.
 The entire chain can be a list of streams.
 
 ```ts
-// index.ts
-import {pipe} from './stream'
+// Rules represent business rules
+const rulePages = createRulePages(api)
+const ruleRpc = createRuleRpc(api)
+const ruleConfig = createRuleConfig(api)
+const ruleWrite = createRuleWrite(api)
 
-const config = {
-  watching: true,
-  src: '/path/to/src',
-  dest: '/path/to/dest',
-  ignore: 'dest',
-}
+const stream = pipeline(
+  // They can then be used in the pipeline
+  input,
+  rulePages.stream,
+  ruleRpc.stream,
+  ruleConfig.stream,
+  ruleWrite.stream,
+)
+```
 
-const initialize = composeRules(blitzConfig, rpc, pages, manifest, fileWriting)
+```ts
+import {through} from './streams'
 
-// returns watch and glob input data as vinyl objects in a single stream
-const source = gatherInput(config)
+// Typical Rule
+export default ({config, input, error, getInputCache}) => {
+  const service = createSomeService()
 
-return new Promise((resolve, reject) => {
-  const readyHandler = (resolveData) => resolve(resolveData)
+  // This is an incremental file cache that
+  // gets built as Files are read
+  const cache = getInputCache()
 
-  // Run initialization code for all streams
-  const rules = await initialize(config, readyHandler)
+  // Probing sync methods are probably ok here as this is effectively synchronous
+  // considered bootstrapping and runs first but you should not write to the file system
+  // Use input.write() instead.
+  if (!pathExistsSync(resolve(config.src, 'blitz.config.js'))) {
+    input.write(resolve(config.src, 'blitz.config.js'), 'Hello World')
+  }
 
-  pipe(source, rules, () => {
-    if (err) reject(err)
+  const stream = through.obj(function (file, enc, next) {
+    // You can test for changes in the input cache
+    if (cache.filter(/next\.config\.js$/.exec).length > -1) {
+      const err = new Error('Cannot have next config!')
+      err.name = 'NextConfigError'
+      errors.write(err)
+    }
+
+    // process file in some way
+    file.path = file.path.toUpperCase()
+
+    // you can push to the stream output
+    this.push(file)
+
+    // send file onwards
+    next(null, file)
   })
-})
-```
 
-```ts
-import {pipeline} from './stream';
-
-function composeRules(...initializers) {
-  const rules = initializers.reduce(...);
-  return function initialize(config: Config, readyHandler: CallbackFn) {
-    return pipeline(
-      input,
-      rules,
-      complete(readyHandler)
-    );
-  }
-}
-```
-
-```ts
-import {pipeline} from './streams'
-
-export default ({input, ready}: Api): Transform => {
-  const manifest = Manifest.create()
-
-  input(file)
-
-  ready(obj => ({...obj, manifest})) // can use a merge function
-  ready({manifest}) // shallow merge to ready object
-
-  // Every key is a stream that will be piped to in order to become
-  // the new phase stream.
-  // Eg. write = pipeline(write, retObj.write)
   return {
-    input,
-    analyze
-    process,
-    write,
-    complete
-  }
-}
-```
-
-```ts
-// Manifest rule
-export default ({ready}) => {
-  const manifest = Manifest.create()
-
-  ready({manifest})
-
-  const complete = pipeline(
-    setManifestEntry(manifest),
-    createManifestFile(manifest, manifestPath),
-    debounce(300, gulpIf(writeManifestFile, dest(srcPath))),
-  )
-
-  return {complete}
-}
-```
-
-```ts
-// File writer
-export default () => {
-  return {
-    write: gulpIf(isUnlinkFile, unlink(destPath), dest(destPath)),
+    stream,
+    service, // provide that service to consumers outside the stream
   }
 }
 ```
 
 # Dirty Sync
+
+Yet to be implemented. This is how we can provide a dirty sync
+experience. Eg. stop dev and start again without having to
+blow the whole folder away
 
 - Encode vinyl files + stats
 
