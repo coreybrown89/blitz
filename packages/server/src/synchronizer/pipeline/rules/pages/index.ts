@@ -1,9 +1,9 @@
 import {through} from '../../../streams'
 import File from 'vinyl'
 import {absolutePathTransform} from '../utils'
-import {RuleConfig} from '../../../types'
+import {RuleArgs} from '../../index'
 
-export default (config: RuleConfig) => {
+export default ({config}: RuleArgs) => {
   const {src} = config
   const transformer = absolutePathTransform(src)(pathTransformer)
   const stream = through.obj((file: File, _, next) => {

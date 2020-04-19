@@ -3,12 +3,11 @@ import {resolve} from 'path'
 import File from 'vinyl'
 
 import {through} from '../../../streams'
-import {RuleConfig} from '../../../types'
-import {Transform} from 'stream'
+import {RuleArgs} from 'synchronizer/pipeline'
 
 // const isBlitzConfigPath = (p: string) => /blitz\.config\.(js|ts)/.test(p)
 
-export default function create(config: RuleConfig, input: Transform, _errors: Transform) {
+export default function create({config, input}: RuleArgs) {
   // Preconditions
   const hasNextConfig = pathExistsSync(resolve(config.src, 'next.config.js'))
   const hasBlitzConfig = pathExistsSync(resolve(config.src, 'blitz.config.js'))

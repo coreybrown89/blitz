@@ -1,10 +1,10 @@
 import File from 'vinyl'
 import {absolutePathTransform} from '../utils'
-import {RuleConfig} from '../../../types'
 import {relative} from 'path'
 import {through} from '../../../streams'
+import {RuleArgs} from '../../index'
 
-export default function configure({src}: RuleConfig) {
+export default function configure({config: {src}}: RuleArgs) {
   const fileTransformer = absolutePathTransform(src)
 
   const getRpcPath = fileTransformer(rpcPath)

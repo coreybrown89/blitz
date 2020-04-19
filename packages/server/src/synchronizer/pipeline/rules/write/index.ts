@@ -1,12 +1,12 @@
 import {through, pipeline} from '../../../streams'
-import {RuleConfig} from '../../../types'
 import gulpIf from 'gulp-if'
 import {unlink} from '../../../unlink'
 import {dest} from 'vinyl-fs'
 import File from 'vinyl'
+import {RuleArgs} from 'synchronizer/pipeline'
 
 // import chalk from 'chalk'
-export default (config: RuleConfig) => {
+export default ({config}: RuleArgs) => {
   let count = 0
   const reporter = through((data, _, next) => {
     next(null, `writing[${count++}]: ${data.toString().replace(config.cwd, '')}\n`)
