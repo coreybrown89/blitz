@@ -14,10 +14,12 @@ import {isSourceFile} from './utils'
 
 type CallbackFn = () => void
 
-const input = through({objectMode: true}, (f, _, next) => next(null, f))
+const input = through({objectMode: true}, (f, _, next) => {
+  next(null, f)
+})
 const errors = through({objectMode: true}, (f, _, next) => next(null, f))
 
-export function initialize(config: RuleConfig, readyHandler: CallbackFn) {
+export default function createPipeline(config: RuleConfig, readyHandler: CallbackFn) {
   // Helper streams don't account for business rules
   const _workOptimizer = createWorkOptimizer()
   const _enrichFiles = createFileEnricher()
@@ -34,7 +36,7 @@ export function initialize(config: RuleConfig, readyHandler: CallbackFn) {
   const ruleWrite = createRuleWrite(config)
   const ruleManifest = createRuleManifest(config)
 
-  // ruleWrite.reporter.pipe(process.stdout)
+  //ruleWrite.reporter.pipe(process.stdout)
 
   const stream = pipeline(
     // List

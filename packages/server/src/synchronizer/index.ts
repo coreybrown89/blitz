@@ -1,8 +1,7 @@
 import {Manifest} from './pipeline/rules/manifest'
 import {pipe} from './streams'
-import {initialize} from './pipeline'
-import agnosticInput from './pipeline/helpers/agnostic-input'
-import countItems from './pipeline/helpers/counter'
+import createPipeline from './pipeline'
+import agnosticSource from './pipeline/helpers/agnostic-source'
 import {pathExists, ensureDir, remove} from 'fs-extra'
 
 type SynchronizeFilesInput = {
@@ -23,15 +22,16 @@ export async function synchronizeFiles({
   dest,
   src,
   manifestPath,
+  watch,
   includePaths: include,
   ignoredPaths: ignore,
   writeManifestFile,
 }: SynchronizeFilesInput): Promise<SynchronizeFilesOutput> {
+  // HACK: This should be removed to enable optimized code copying
   await clean(dest)
-  return new Promise((resolve, reject) => {
-    const counter = countItems()
-    const source = agnosticInput({cwd: src, include, ignore})
 
+  // Clean folder
+  return new Promise((resolve, reject) => {
     const config = {
       cwd: src,
       src: src,
@@ -42,13 +42,18 @@ export async function synchronizeFiles({
       },
     }
 
-    const pipeline = initialize(config, () => {
+    const readyHandler = () => {
       resolve({manifest: pipeline.manifest})
-    })
+    }
 
-    pipe(source.stream, counter.stream, pipeline.stream, (err: any) => {
+    const catchErrors = (err: any) => {
       if (err) reject(err)
-    })
+    }
+
+    const source = agnosticSource({cwd: src, include, ignore, watch})
+    const pipeline = createPipeline(config, readyHandler)
+
+    pipe(source.stream, pipeline.stream, catchErrors)
   })
 }
 

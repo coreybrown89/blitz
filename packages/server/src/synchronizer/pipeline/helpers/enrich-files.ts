@@ -15,7 +15,7 @@ export default () => {
     if (!file.hash) {
       const hash = crypto
         .createHash('md5')
-        .update(JSON.stringify({path: file.path, s: file.stats?.mtimeMs}))
+        .update(JSON.stringify({path: file.path, s: file.stat?.mtime}))
         .digest('hex')
 
       file.hash = hash
