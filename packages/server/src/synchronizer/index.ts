@@ -1,7 +1,7 @@
 import {Manifest} from './pipeline/rules/manifest'
 import {pipe} from './streams'
-import vfs from 'vinyl-fs'
 import {initialize} from './pipeline'
+import agnosticInput from './pipeline/helpers/agnostic-input'
 import countItems from './pipeline/helpers/counter'
 import {pathExists, ensureDir, remove} from 'fs-extra'
 
@@ -19,17 +19,6 @@ type SynchronizeFilesOutput = {
   manifest: Manifest
 }
 
-type SourceConfig = {cwd: string; include: string[]; ignore: string[]}
-
-function gatherInput({include, cwd, ignore}: SourceConfig) {
-  return vfs.src([...include, ...ignore.map((a) => '!' + a)], {
-    buffer: true,
-    read: true,
-    cwd,
-    stat: true,
-  })
-}
-
 export async function synchronizeFiles({
   dest,
   src,
@@ -41,7 +30,7 @@ export async function synchronizeFiles({
   await clean(dest)
   return new Promise((resolve, reject) => {
     const counter = countItems()
-    const source = gatherInput({cwd: src, include, ignore})
+    const source = agnosticInput({cwd: src, include, ignore})
 
     const config = {
       cwd: src,
@@ -57,7 +46,7 @@ export async function synchronizeFiles({
       resolve({manifest: pipeline.manifest})
     })
 
-    pipe(source, counter.stream, pipeline.stream, (err: any) => {
+    pipe(source.stream, counter.stream, pipeline.stream, (err: any) => {
       if (err) reject(err)
     })
   })

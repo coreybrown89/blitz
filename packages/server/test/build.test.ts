@@ -17,7 +17,7 @@ import {resolve} from 'path'
 import {remove, pathExists} from 'fs-extra'
 import directoryTree from 'directory-tree'
 
-describe('Build command', () => {
+describe.skip('Build command', () => {
   const rootFolder = resolve(__dirname, './fixtures/build')
   const buildFolder = resolve(rootFolder, '.blitz-build')
   const devFolder = resolve(rootFolder, '.blitz')
