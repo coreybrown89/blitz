@@ -30,6 +30,9 @@ export async function synchronizeFiles({
   // HACK: This should be removed to enable optimized code copying
   await clean(dest)
 
+  // checkNestedApi(entries)
+  // checkDuplicateRoutes(entries)
+
   // Clean folder
   return new Promise((resolve, reject) => {
     const config = {
