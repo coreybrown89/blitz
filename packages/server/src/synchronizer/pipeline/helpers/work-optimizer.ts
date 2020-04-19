@@ -19,7 +19,7 @@ export default () => {
   const triage = through({objectMode: true}, function (file: File, _, next) {
     // Dont send files
     if (done.includes(file.hash) || todo.includes(file.hash)) {
-      console.log('Rejecting because this job has been done before: ' + file.path)
+      process.env.DEBUG && console.log('Rejecting because this job has been done before: ' + file.path)
       return next()
     }
 

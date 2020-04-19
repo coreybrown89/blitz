@@ -13,6 +13,7 @@ export async function dev(config: ServerConfig) {
     manifestPath,
     writeManifestFile,
     includePaths,
+    watch = true,
   } = await enhance({
     ...config,
     interceptNextErrors: true,
@@ -24,7 +25,7 @@ export async function dev(config: ServerConfig) {
     const {manifest} = await synchronizeFiles({
       src,
       dest,
-      watch: true,
+      watch,
       ignoredPaths,
       includePaths,
       manifestPath,

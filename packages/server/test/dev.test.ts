@@ -17,14 +17,14 @@ import {resolve} from 'path'
 import {remove, pathExists} from 'fs-extra'
 import directoryTree from 'directory-tree'
 
-describe.skip('Dev command', () => {
+describe('Dev command', () => {
   const rootFolder = resolve(__dirname, './fixtures/dev')
   const buildFolder = resolve(rootFolder, '.blitz')
   const devFolder = resolve(rootFolder, '.blitz-dev')
 
   beforeEach(async () => {
     jest.clearAllMocks()
-    await dev({rootFolder, buildFolder, devFolder, writeManifestFile: false})
+    await dev({rootFolder, buildFolder, devFolder, writeManifestFile: false, watch: false})
   })
 
   afterEach(async () => {
@@ -39,6 +39,20 @@ describe.skip('Dev command', () => {
       children: [
         {
           children: [
+            {
+              extension: '.js',
+              name: 'blitz.config.js',
+              path: `${devFolder}/blitz.config.js`,
+              size: 20,
+              type: 'file',
+            },
+            {
+              extension: '.js',
+              name: 'next.config.js',
+              path: `${devFolder}/next.config.js`,
+              size: 130,
+              type: 'file',
+            },
             {
               extension: '',
               name: 'one',
@@ -56,7 +70,7 @@ describe.skip('Dev command', () => {
           ],
           name: '.blitz-dev',
           path: `${rootFolder}/.blitz-dev`,
-          size: 0,
+          size: 150,
           type: 'directory',
         },
         {
@@ -83,7 +97,7 @@ describe.skip('Dev command', () => {
       ],
       name: 'dev',
       path: `${rootFolder}`,
-      size: 18,
+      size: 168,
       type: 'directory',
     })
   })

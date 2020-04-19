@@ -1,6 +1,6 @@
 import {through} from '../../../streams'
 import File from 'vinyl'
-import {absolutePathTransform} from '../utils'
+import {absolutePathTransform} from '../../utils'
 import {Rule} from '../../../types'
 
 const create: Rule = ({config}) => {

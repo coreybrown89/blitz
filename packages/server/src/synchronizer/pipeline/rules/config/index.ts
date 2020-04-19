@@ -25,6 +25,7 @@ const create: Rule = ({config, input}) => {
     // Assume a bare blitz config
     input.write(
       new File({
+        cwd: config.src,
         path: resolve(config.src, 'blitz.config.js'),
         contents: Buffer.from('module.exports = {};'),
       }),
@@ -39,14 +40,14 @@ module.exports = withBlitz(config);
 
   input.write(
     new File({
+      cwd: config.src,
       path: resolve(config.src, 'next.config.js'),
       contents: Buffer.from(nextConfigShellTpl),
     }),
   )
 
-  const stream = through({objectMode: true}, async (file: File, _, next) => {
-    return next(null, file)
-  })
+  // No need to filter yet
+  const stream = through({objectMode: true}, (file: File, _, next) => next(null, file))
 
   return {stream}
 }

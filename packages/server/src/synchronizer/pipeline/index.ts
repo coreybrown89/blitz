@@ -12,14 +12,10 @@ import createRuleRpc from './rules/rpc'
 import createRuleWrite from './rules/write'
 import {isSourceFile} from './utils'
 
-type CallbackFn = () => void
-
-const input = through({objectMode: true}, (f, _, next) => {
-  next(null, f)
-})
+const input = through({objectMode: true}, (f, _, next) => next(null, f))
 const errors = through({objectMode: true}, (f, _, next) => next(null, f))
 
-export default function createPipeline(config: RuleConfig, readyHandler: CallbackFn) {
+export default function createPipeline(config: RuleConfig, readyHandler: () => void) {
   // Helper streams don't account for business rules
   const _workOptimizer = createWorkOptimizer()
   const _enrichFiles = createFileEnricher()

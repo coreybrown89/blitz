@@ -1,5 +1,5 @@
 import File from 'vinyl'
-import {absolutePathTransform} from '../utils'
+import {absolutePathTransform} from '../../utils'
 import {relative} from 'path'
 import {through} from '../../../streams'
 import {Rule} from '../../../types'

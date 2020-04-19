@@ -1,4 +1,6 @@
-export {default as pipe} from 'pump'
+import pipe from 'pump'
+export {pipe}
+
 import {Stream} from 'stream'
 import through from 'through2'
 export {through}
@@ -16,4 +18,5 @@ const pipeline = (pumpify.ctor({
   objectMode: true,
   highWaterMark: 160,
 }) as any) as PumpifyFn
+
 export {pipeline}
